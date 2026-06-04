@@ -12,8 +12,9 @@ const ResponsiveContainer = dynamic(
 );
 
 export default function Home() {
-  const [session, setSession] = useState<Session | null>(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+  const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -74,19 +75,19 @@ export default function Home() {
   };
 
   const fetchProducts = async () => {
-    const res = await fetch("http://127.0.0.1:8000/products");
+    const res = await fetch(`${API_URL}/products`);
     const data = await res.json();
     setProducts(Array.isArray(data) ? data : []);
   };
 
   const fetchSales = async () => {
-    const res = await fetch("http://127.0.0.1:8000/sales");
+    const res = await fetch(`${API_URL}/sales`);
     const data = await res.json();
     setSales(Array.isArray(data) ? data : []);
   };
 
   const fetchSummary = async () => {
-    const res = await fetch("http://127.0.0.1:8000/sales/summary");
+    const res = await fetch(`${API_URL}/sales/summary`);
     const data = await res.json();
     setSummary(data);
   };
@@ -107,7 +108,7 @@ export default function Home() {
       return;
     }
 
-    await fetch("http://127.0.0.1:8000/products", {
+    await fetch(`${API_URL}/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,7 +137,7 @@ export default function Home() {
       return;
     }
 
-    const res = await fetch("http://127.0.0.1:8000/sales", {
+    const res = await fetch(`${API_URL}/sales`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
