@@ -455,7 +455,7 @@ const brand = {
   marginBottom: "40px",
 };
 const brandIcon = {
-  background: "#2563eb",
+  background: "#56c3f9",
   padding: "12px",
   borderRadius: "14px",
   fontSize: "24px",
@@ -481,7 +481,7 @@ const hero = {
   alignItems: "center",
   marginBottom: "28px",
 };
-const eyebrow = { color: "#2563eb", fontWeight: "bold", margin: 0 };
+const eyebrow = { color: "#4b9af9", fontWeight: "bold", margin: 0 };
 const heroTitle = { fontSize: "42px", margin: "6px 0" };
 const statsGrid = {
   display: "grid",
@@ -530,7 +530,7 @@ const primaryButton = {
 };
 const secondaryButton = {
   padding: "12px 18px",
-  background: "#2563eb",
+  background: "#3f9bf1",
   color: "white",
   border: "none",
   borderRadius: "12px",
