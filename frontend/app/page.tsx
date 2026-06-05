@@ -20,6 +20,7 @@ export default function Home() {
 
   const [products, setProducts] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
+  const [forecast, setForecast] = useState<any[]>([]);
   const [summary, setSummary] = useState({
     total_revenue: 0,
     total_items_sold: 0,
@@ -92,10 +93,17 @@ export default function Home() {
     setSummary(data);
   };
 
+  const fetchForecast = async () => {
+    const res = await fetch(`${API_URL}/forecast`);
+    const data = await res.json();
+    setForecast(Array.isArray(data) ? data : []);
+  };
+
   const refreshAll = async () => {
     await fetchProducts();
     await fetchSales();
     await fetchSummary();
+    await fetchForecast();
   };
 
   useEffect(() => {
@@ -199,6 +207,8 @@ export default function Home() {
   }
 
   const cleanProducts = products.filter((p) => p.name);
+
+  const cleanForecast = forecast.filter((item) => item.product_name);
 
   const categories = [
     "All",
@@ -314,6 +324,40 @@ export default function Home() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        )}
+      </div>
+
+      <div style={sectionStyle}>
+        <h2>🤖 AI Inventory Forecast</h2>
+
+        {cleanForecast.length === 0 ? (
+          <p>No forecast data yet.</p>
+        ) : (
+          cleanForecast.map((item) => (
+            <div
+              key={item.product_id}
+              style={{
+                background:
+                  item.risk === "High"
+                    ? "#fee2e2"
+                    : item.risk === "Medium"
+                      ? "#fff3cd"
+                      : "#d4edda",
+                padding: "15px",
+                borderRadius: "10px",
+                marginBottom: "10px",
+                border: "1px solid #ddd",
+              }}
+            >
+              <h3>{item.product_name}</h3>
+              <p>Current Stock: {item.current_stock}</p>
+              <p>Predicted Next 7 Days Sales: {item.predicted_7_day_sales}</p>
+              <p>Recommended Restock: {item.recommended_restock}</p>
+              <p>
+                Risk Level: <strong>{item.risk}</strong>
+              </p>
+            </div>
+          ))
         )}
       </div>
 
