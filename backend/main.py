@@ -202,3 +202,58 @@ def forecast_inventory():
         })
 
     return forecast_data
+@app.get("/business-insights")
+def business_insights():
+    products_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=*",
+        headers=headers,
+    )
+
+    sales_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/sales?select=*",
+        headers=headers,
+    )
+
+    products = products_response.json()
+    sales = sales_response.json()
+
+    insights = []
+
+    total_revenue = sum(float(sale["total_amount"]) for sale in sales)
+    total_items_sold = sum(int(sale["quantity_sold"]) for sale in sales)
+
+    if total_revenue > 0:
+        insights.append(f"💰 Your store has generated ₹{total_revenue:,.0f} revenue so far.")
+    else:
+        insights.append("💡 No revenue yet. Start recording sales to track business growth.")
+
+    if total_items_sold > 0:
+        insights.append(f"📦 You have sold {total_items_sold} total items.")
+    else:
+        insights.append("🧾 No sales recorded yet. Try selling a product to activate sales insights.")
+
+    for product in products:
+        name = product.get("name", "Unknown Product")
+
+        if not name:
+            continue
+
+        quantity = int(product.get("quantity", 0))
+        threshold = int(product.get("low_stock_threshold", 5))
+
+        product_sales = [
+            sale for sale in sales if sale["product_id"] == product["id"]
+        ]
+
+        total_sold = sum(int(sale["quantity_sold"]) for sale in product_sales)
+
+        if quantity == 0:
+            insights.append(f"🚨 {name} is out of stock. Restock immediately.")
+        elif quantity <= threshold:
+            insights.append(f"⚠️ {name} is low in stock. Current stock is {quantity}.")
+        elif total_sold >= 5:
+            insights.append(f"🔥 {name} is performing well with {total_sold} units sold.")
+        else:
+            insights.append(f"✅ {name} stock level looks healthy.")
+
+    return {"insights": insights}

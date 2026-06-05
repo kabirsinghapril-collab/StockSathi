@@ -22,6 +22,8 @@ export default function Home() {
   const [products, setProducts] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any[]>([]);
+  const [insights, setInsights] = useState<string[]>([]);
+
   const [summary, setSummary] = useState({
     total_revenue: 0,
     total_items_sold: 0,
@@ -55,7 +57,10 @@ export default function Home() {
   };
 
   const signup = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
     if (error) alert(error.message);
     else alert("Signup done. Now login.");
   };
@@ -88,11 +93,18 @@ export default function Home() {
     setForecast(Array.isArray(data) ? data : []);
   };
 
+  const fetchInsights = async () => {
+    const res = await fetch(`${API_URL}/business-insights`);
+    const data = await res.json();
+    setInsights(Array.isArray(data.insights) ? data.insights : []);
+  };
+
   const refreshAll = async () => {
     await fetchProducts();
     await fetchSales();
     await fetchSummary();
     await fetchForecast();
+    await fetchInsights();
   };
 
   useEffect(() => {
@@ -107,7 +119,9 @@ export default function Home() {
 
     await fetch(`${API_URL}/products`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         name,
         quantity: Number(quantity),
@@ -167,7 +181,9 @@ export default function Home() {
 
     const res = await fetch(`${API_URL}/sales`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         product_id: productId,
         quantity_sold: qty,
@@ -185,7 +201,11 @@ export default function Home() {
       generateInvoice(product.name, qty, Number(product.price));
     }
 
-    setSaleQuantities({ ...saleQuantities, [productId]: "" });
+    setSaleQuantities({
+      ...saleQuantities,
+      [productId]: "",
+    });
+
     refreshAll();
   };
 
@@ -205,6 +225,7 @@ export default function Home() {
             onChange={(e) => setEmail(e.target.value)}
             style={inputStyle}
           />
+
           <input
             placeholder="Password"
             type="password"
@@ -216,6 +237,7 @@ export default function Home() {
           <button onClick={login} style={primaryButton}>
             Login
           </button>
+
           <button onClick={signup} style={secondaryButton}>
             Create Account
           </button>
@@ -236,10 +258,12 @@ export default function Home() {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory =
       categoryFilter === "All" || (p.category || "General") === categoryFilter;
+
     return matchesSearch && matchesCategory;
   });
 
   const totalProducts = cleanProducts.length;
+
   const lowStockCount = cleanProducts.filter(
     (p) => Number(p.quantity || 0) <= Number(p.low_stock_threshold || 5),
   ).length;
@@ -270,6 +294,7 @@ export default function Home() {
           <p style={navItem}>Inventory</p>
           <p style={navItem}>Sales</p>
           <p style={navItem}>AI Forecast</p>
+          <p style={navItem}>AI Advisor</p>
         </nav>
 
         <button onClick={logout} style={logoutButton}>
@@ -284,6 +309,7 @@ export default function Home() {
             <h1 style={heroTitle}>Inventory Command Center</h1>
             <p style={mutedText}>Logged in as {session.user.email}</p>
           </div>
+
           <button onClick={refreshAll} style={primaryButton}>
             Refresh Data
           </button>
@@ -321,6 +347,7 @@ export default function Home() {
         <div style={twoColumn}>
           <section style={panel}>
             <h2>📊 Stock Analytics</h2>
+
             {chartData.length === 0 ? (
               <p style={mutedText}>No chart data yet.</p>
             ) : (
@@ -340,20 +367,40 @@ export default function Home() {
 
           <section style={panel}>
             <h2>🤖 AI Forecast</h2>
-            {cleanForecast.slice(0, 4).map((item) => (
-              <div key={item.product_id} style={forecastCard(item.risk)}>
-                <strong>{item.product_name}</strong>
-                <p>Stock: {item.current_stock}</p>
-                <p>7-Day Prediction: {item.predicted_7_day_sales}</p>
-                <p>Restock: {item.recommended_restock}</p>
-                <span style={badge(item.risk)}>{item.risk} Risk</span>
-              </div>
-            ))}
+
+            {cleanForecast.length === 0 ? (
+              <p style={mutedText}>No forecast data yet.</p>
+            ) : (
+              cleanForecast.slice(0, 4).map((item) => (
+                <div key={item.product_id} style={forecastCard(item.risk)}>
+                  <strong>{item.product_name}</strong>
+                  <p>Stock: {item.current_stock}</p>
+                  <p>7-Day Prediction: {item.predicted_7_day_sales}</p>
+                  <p>Restock: {item.recommended_restock}</p>
+                  <span style={badge(item.risk)}>{item.risk} Risk</span>
+                </div>
+              ))
+            )}
           </section>
         </div>
 
         <section style={panel}>
+          <h2>🤖 AI Business Advisor</h2>
+
+          {insights.length === 0 ? (
+            <p style={mutedText}>No insights available yet.</p>
+          ) : (
+            insights.map((item, index) => (
+              <div key={index} style={insightCard}>
+                {item}
+              </div>
+            ))
+          )}
+        </section>
+
+        <section style={panel}>
           <h2>Add New Product</h2>
+
           <div style={formGrid}>
             <input
               placeholder="Product Name"
@@ -361,18 +408,21 @@ export default function Home() {
               onChange={(e) => setName(e.target.value)}
               style={inputStyle}
             />
+
             <input
               placeholder="Quantity"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               style={inputStyle}
             />
+
             <input
               placeholder="Price"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               style={inputStyle}
             />
+
             <input
               placeholder="Category"
               value={category}
@@ -380,6 +430,7 @@ export default function Home() {
               style={inputStyle}
             />
           </div>
+
           <button onClick={addProduct} style={primaryButton}>
             Add Product
           </button>
@@ -388,6 +439,7 @@ export default function Home() {
         <section style={panel}>
           <div style={sectionHeader}>
             <h2>Products & Sales</h2>
+
             <div>
               <input
                 placeholder="Search product..."
@@ -395,6 +447,7 @@ export default function Home() {
                 onChange={(e) => setSearch(e.target.value)}
                 style={inputStyle}
               />
+
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
@@ -453,6 +506,7 @@ export default function Home() {
 
         <section style={panel}>
           <h2>💰 Sales History</h2>
+
           {sales.length === 0 ? (
             <p style={mutedText}>No sales yet.</p>
           ) : (
@@ -486,6 +540,7 @@ const appShell = {
   background: "#f8fafc",
   fontFamily: "Inter, Arial",
 };
+
 const sidebar = {
   width: "260px",
   background: "#020617",
@@ -494,26 +549,43 @@ const sidebar = {
   position: "fixed" as const,
   height: "100vh",
 };
-const mainContent = { marginLeft: "308px", padding: "32px", width: "100%" };
+
+const mainContent = {
+  marginLeft: "308px",
+  padding: "32px",
+  width: "100%",
+};
+
 const brand = {
   display: "flex",
   gap: "12px",
   alignItems: "center",
   marginBottom: "40px",
 };
+
 const brandIcon = {
   background: "#2563eb",
   padding: "12px",
   borderRadius: "14px",
   fontSize: "24px",
 };
-const navBox = { display: "grid", gap: "10px" };
-const navItem = { padding: "12px", color: "#94a3b8" };
+
+const navBox = {
+  display: "grid",
+  gap: "10px",
+};
+
+const navItem = {
+  padding: "12px",
+  color: "#94a3b8",
+};
+
 const navItemActive = {
   padding: "12px",
   background: "#1e293b",
   borderRadius: "12px",
 };
+
 const logoutButton = {
   marginTop: "40px",
   padding: "12px",
@@ -522,32 +594,46 @@ const logoutButton = {
   borderRadius: "12px",
   cursor: "pointer",
 };
+
 const hero = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
   marginBottom: "28px",
 };
-const eyebrow = { color: "#2563eb", fontWeight: "bold", margin: 0 };
-const heroTitle = { fontSize: "42px", margin: "6px 0" };
+
+const eyebrow = {
+  color: "#2563eb",
+  fontWeight: "bold",
+  margin: 0,
+};
+
+const heroTitle = {
+  fontSize: "42px",
+  margin: "6px 0",
+};
+
 const statsGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
   gap: "16px",
   marginBottom: "24px",
 };
+
 const statCard = {
   padding: "22px",
   borderRadius: "18px",
   border: "1px solid #e5e7eb",
   boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
 };
+
 const twoColumn = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr",
   gap: "20px",
   marginBottom: "24px",
 };
+
 const panel = {
   background: "white",
   padding: "24px",
@@ -556,17 +642,20 @@ const panel = {
   marginBottom: "24px",
   boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
 };
+
 const formGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
   gap: "12px",
 };
+
 const inputStyle = {
   padding: "12px 14px",
   border: "1px solid #d1d5db",
   borderRadius: "12px",
   marginBottom: "10px",
 };
+
 const primaryButton = {
   padding: "12px 18px",
   background: "#111827",
@@ -575,6 +664,7 @@ const primaryButton = {
   borderRadius: "12px",
   cursor: "pointer",
 };
+
 const secondaryButton = {
   padding: "12px 18px",
   background: "#2563eb",
@@ -584,6 +674,7 @@ const secondaryButton = {
   cursor: "pointer",
   marginLeft: "10px",
 };
+
 const successButton = {
   padding: "10px 14px",
   background: "#16a34a",
@@ -593,6 +684,7 @@ const successButton = {
   cursor: "pointer",
   marginRight: "8px",
 };
+
 const invoiceButton = {
   padding: "10px 14px",
   background: "#2563eb",
@@ -601,36 +693,58 @@ const invoiceButton = {
   borderRadius: "12px",
   cursor: "pointer",
 };
-const mutedText = { color: "#64748b" };
-const smallMuted = { color: "#94a3b8", margin: "0 0 8px 0", fontSize: "14px" };
+
+const mutedText = {
+  color: "#64748b",
+};
+
+const smallMuted = {
+  color: "#94a3b8",
+  margin: "0 0 8px 0",
+  fontSize: "14px",
+};
+
 const sectionHeader = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
 };
+
 const productGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
   gap: "16px",
 };
+
 const productCard = {
   padding: "18px",
   borderRadius: "18px",
   border: "1px solid #e5e7eb",
   background: "#f9fafb",
 };
+
 const saleRow = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr 1fr 2fr",
   padding: "14px",
   borderBottom: "1px solid #e5e7eb",
 };
+
+const insightCard = {
+  padding: "14px",
+  marginBottom: "10px",
+  borderRadius: "14px",
+  background: "#f8fafc",
+  border: "1px solid #e2e8f0",
+};
+
 const authPage = {
   minHeight: "100vh",
   display: "grid",
   placeItems: "center",
   background: "linear-gradient(135deg,#020617,#1d4ed8)",
 };
+
 const authCard = {
   background: "white",
   padding: "36px",
@@ -638,8 +752,15 @@ const authCard = {
   maxWidth: "420px",
   boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
 };
-const logoBox = { fontSize: "42px" };
-const authTitle = { fontSize: "36px", margin: "8px 0" };
+
+const logoBox = {
+  fontSize: "42px",
+};
+
+const authTitle = {
+  fontSize: "36px",
+  margin: "8px 0",
+};
 
 const forecastCard = (risk: string) => ({
   padding: "14px",
