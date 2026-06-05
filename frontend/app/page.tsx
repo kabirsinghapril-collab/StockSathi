@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { supabase } from "../lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
+import { jsPDF } from "jspdf";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 
 const ResponsiveContainer = dynamic(
@@ -123,6 +124,37 @@ export default function Home() {
     refreshAll();
   };
 
+  const generateInvoice = (
+    productName: string,
+    quantity: number,
+    price: number,
+  ) => {
+    const doc = new jsPDF();
+    const total = quantity * price;
+    const invoiceNo = `INV-${Date.now()}`;
+
+    doc.setFontSize(22);
+    doc.text("StockSathi Invoice", 20, 20);
+
+    doc.setFontSize(11);
+    doc.text(`Invoice No: ${invoiceNo}`, 20, 35);
+    doc.text(`Date: ${new Date().toLocaleString()}`, 20, 43);
+
+    doc.setFontSize(14);
+    doc.text("Bill Details", 20, 60);
+
+    doc.setFontSize(12);
+    doc.text(`Product: ${productName}`, 20, 75);
+    doc.text(`Quantity: ${quantity}`, 20, 85);
+    doc.text(`Price: Rs. ${price}`, 20, 95);
+    doc.text(`Total: Rs. ${total}`, 20, 105);
+
+    doc.setFontSize(10);
+    doc.text("Thank you for using StockSathi.", 20, 130);
+
+    doc.save(`invoice-${productName || "product"}.pdf`);
+  };
+
   const recordSale = async (productId: number) => {
     const qty = Number(saleQuantities[productId] || 0);
 
@@ -130,6 +162,8 @@ export default function Home() {
       alert("Enter sale quantity");
       return;
     }
+
+    const product = products.find((p) => p.id === productId);
 
     const res = await fetch(`${API_URL}/sales`, {
       method: "POST",
@@ -145,6 +179,10 @@ export default function Home() {
     if (data.error) {
       alert(data.error);
       return;
+    }
+
+    if (product) {
+      generateInvoice(product.name, qty, Number(product.price));
     }
 
     setSaleQuantities({ ...saleQuantities, [productId]: "" });
@@ -397,7 +435,16 @@ export default function Home() {
                   onClick={() => recordSale(product.id)}
                   style={successButton}
                 >
-                  Sell Product
+                  Sell + Invoice
+                </button>
+
+                <button
+                  onClick={() =>
+                    generateInvoice(product.name, 1, Number(product.price))
+                  }
+                  style={invoiceButton}
+                >
+                  PDF Invoice
                 </button>
               </div>
             ))}
@@ -455,7 +502,7 @@ const brand = {
   marginBottom: "40px",
 };
 const brandIcon = {
-  background: "#56c3f9",
+  background: "#2563eb",
   padding: "12px",
   borderRadius: "14px",
   fontSize: "24px",
@@ -481,7 +528,7 @@ const hero = {
   alignItems: "center",
   marginBottom: "28px",
 };
-const eyebrow = { color: "#4b9af9", fontWeight: "bold", margin: 0 };
+const eyebrow = { color: "#2563eb", fontWeight: "bold", margin: 0 };
 const heroTitle = { fontSize: "42px", margin: "6px 0" };
 const statsGrid = {
   display: "grid",
@@ -530,7 +577,7 @@ const primaryButton = {
 };
 const secondaryButton = {
   padding: "12px 18px",
-  background: "#3f9bf1",
+  background: "#2563eb",
   color: "white",
   border: "none",
   borderRadius: "12px",
@@ -540,6 +587,15 @@ const secondaryButton = {
 const successButton = {
   padding: "10px 14px",
   background: "#16a34a",
+  color: "white",
+  border: "none",
+  borderRadius: "12px",
+  cursor: "pointer",
+  marginRight: "8px",
+};
+const invoiceButton = {
+  padding: "10px 14px",
+  background: "#2563eb",
   color: "white",
   border: "none",
   borderRadius: "12px",
