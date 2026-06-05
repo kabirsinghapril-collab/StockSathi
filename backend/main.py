@@ -86,7 +86,6 @@ def record_sale(sale: dict):
         return {"error": "Product not found"}
 
     product = products[0]
-
     current_quantity = int(product["quantity"])
 
     if quantity_sold > current_quantity:
@@ -148,3 +147,58 @@ def sales_summary():
         "total_items_sold": total_items_sold,
         "total_sales": total_sales,
     }
+
+@app.get("/forecast")
+def forecast_inventory():
+    products_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=*",
+        headers=headers,
+    )
+
+    sales_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/sales?select=*",
+        headers=headers,
+    )
+
+    products = products_response.json()
+    sales = sales_response.json()
+
+    forecast_data = []
+
+    for product in products:
+        product_id = product["id"]
+        product_name = product["name"]
+        current_stock = int(product["quantity"])
+        threshold = int(product.get("low_stock_threshold", 5))
+
+        product_sales = [
+            sale for sale in sales if sale["product_id"] == product_id
+        ]
+
+        total_sold = sum(int(sale["quantity_sold"]) for sale in product_sales)
+        sales_count = len(product_sales)
+
+        average_sale = total_sold / sales_count if sales_count > 0 else 0
+        predicted_7_day_sales = round(average_sale * 7)
+
+        if predicted_7_day_sales > current_stock:
+            recommended_restock = predicted_7_day_sales - current_stock + 5
+            risk = "High"
+        elif current_stock <= threshold:
+            recommended_restock = 10
+            risk = "Medium"
+        else:
+            recommended_restock = 0
+            risk = "Low"
+
+        forecast_data.append({
+            "product_id": product_id,
+            "product_name": product_name,
+            "current_stock": current_stock,
+            "total_sold": total_sold,
+            "predicted_7_day_sales": predicted_7_day_sales,
+            "recommended_restock": recommended_restock,
+            "risk": risk,
+        })
+
+    return forecast_data
