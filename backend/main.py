@@ -394,3 +394,130 @@ def revenue_intelligence():
         "low_stock_count": len(low_stock_products),
         "low_stock_products": low_stock_products,
     }
+@app.post("/ai-chat")
+def ai_chat(message: dict):
+    user_message = message.get("message", "").lower()
+
+    products_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=*",
+        headers=headers,
+    )
+
+    sales_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/sales?select=*",
+        headers=headers,
+    )
+
+    products = products_response.json()
+    sales = sales_response.json()
+
+    total_revenue = sum(float(sale.get("total_amount", 0)) for sale in sales)
+
+    low_stock = [
+        product for product in products
+        if product.get("name") and int(product.get("quantity", 0)) <= int(product.get("low_stock_threshold", 5))
+    ]
+
+    if "revenue" in user_message:
+        return {
+            "reply": f"Your total revenue is ₹{total_revenue:,.0f}."
+        }
+
+    if "low stock" in user_message or "restock" in user_message:
+        if not low_stock:
+            return {"reply": "All products look healthy. No urgent restock needed."}
+
+        names = ", ".join([p["name"] for p in low_stock])
+        return {
+            "reply": f"You should restock these products soon: {names}."
+        }
+
+    if "best" in user_message or "top" in user_message:
+        product_sales = {}
+
+        for sale in sales:
+            name = sale.get("product_name", "Unknown")
+            qty = int(sale.get("quantity_sold", 0))
+            product_sales[name] = product_sales.get(name, 0) + qty
+
+        if not product_sales:
+            return {"reply": "No sales yet, so I cannot find a best-selling product."}
+
+        top_product = max(product_sales, key=product_sales.get)
+
+        return {
+            "reply": f"Your best-selling product is {top_product} with {product_sales[top_product]} units sold."
+        }
+
+    if "advice" in user_message or "suggest" in user_message:
+        if low_stock:
+            return {
+                "reply": f"My advice: restock {low_stock[0]['name']} first because it is low in stock."
+            }
+
+        return {
+            "reply": "My advice: focus on selling your highest-value products and keep checking low-stock alerts daily."
+        }
+
+    return {
+        "reply": "I can help with revenue, low stock, restocking, best-selling products, and business advice."
+    }
+@app.get("/team")
+def get_team():
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/team_members?select=*&order=created_at.desc",
+        headers=headers,
+    )
+    return response.json()
+
+
+@app.post("/team")
+def add_team_member(member: dict):
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/team_members",
+        headers=headers,
+        json=member,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Team member added",
+            "status": response.status_code,
+            "response": response.text,
+        }
+
+
+@app.put("/team/{member_id}")
+def update_team_member(member_id: int, member: dict):
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/team_members?id=eq.{member_id}",
+        headers=headers,
+        json=member,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Team member updated",
+            "status": response.status_code,
+            "response": response.text,
+        }
+
+
+@app.delete("/team/{member_id}")
+def delete_team_member(member_id: int):
+    response = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/team_members?id=eq.{member_id}",
+        headers=headers,
+    )
+
+    return {
+        "message": "Team member deleted",
+        "status": response.status_code,
+    }
+@app.get("/team")
+def get_team():
+    return {"message": "Team API working"}

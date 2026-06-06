@@ -25,6 +25,8 @@ export default function Home() {
   const [forecast, setForecast] = useState<any[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
   const [revenueIntel, setRevenueIntel] = useState<any>(null);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatReply, setChatReply] = useState("");
 
   const [summary, setSummary] = useState({
     total_revenue: 0,
@@ -107,6 +109,23 @@ export default function Home() {
     const res = await fetch(`${API_URL}/revenue-intelligence`);
     const data = await res.json();
     setRevenueIntel(data);
+  };
+  const askAI = async () => {
+    if (!chatMessage) return;
+
+    const res = await fetch(`${API_URL}/ai-chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: chatMessage,
+      }),
+    });
+
+    const data = await res.json();
+
+    setChatReply(data.reply);
   };
 
   const refreshAll = async () => {
@@ -599,6 +618,63 @@ export default function Home() {
                 </button>
               </div>
             ))}
+          </div>
+        </section>
+        <section style={darkMode ? darkPanel : panel}>
+          <h2>🤖 StockSathi AI Assistant</h2>
+
+          <input
+            placeholder="Ask StockSathi AI..."
+            value={chatMessage}
+            onChange={(e) => setChatMessage(e.target.value)}
+            style={inputStyle}
+          />
+
+          <button onClick={askAI} style={primaryButton}>
+            Ask AI
+          </button>
+
+          {chatReply && (
+            <div style={darkMode ? darkInsightCard : insightCard}>
+              {chatReply}
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: "15px",
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              style={secondaryButton}
+              onClick={() => setChatMessage("Which products should I restock?")}
+            >
+              Restock Advice
+            </button>
+
+            <button
+              style={secondaryButton}
+              onClick={() => setChatMessage("What is my revenue?")}
+            >
+              Revenue
+            </button>
+
+            <button
+              style={secondaryButton}
+              onClick={() => setChatMessage("What is my best selling product?")}
+            >
+              Best Seller
+            </button>
+
+            <button
+              style={secondaryButton}
+              onClick={() => setChatMessage("Give business advice")}
+            >
+              Business Advice
+            </button>
           </div>
         </section>
 
