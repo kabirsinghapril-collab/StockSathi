@@ -25,6 +25,11 @@ export default function Home() {
   const [forecast, setForecast] = useState<any[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
   const [revenueIntel, setRevenueIntel] = useState<any>(null);
+
+  const [team, setTeam] = useState<any[]>([]);
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberRole, setMemberRole] = useState("employee");
+
   const [chatMessage, setChatMessage] = useState("");
   const [chatReply, setChatReply] = useState("");
 
@@ -110,22 +115,11 @@ export default function Home() {
     const data = await res.json();
     setRevenueIntel(data);
   };
-  const askAI = async () => {
-    if (!chatMessage) return;
 
-    const res = await fetch(`${API_URL}/ai-chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: chatMessage,
-      }),
-    });
-
+  const fetchTeam = async () => {
+    const res = await fetch(`${API_URL}/team`);
     const data = await res.json();
-
-    setChatReply(data.reply);
+    setTeam(Array.isArray(data) ? data : []);
   };
 
   const refreshAll = async () => {
@@ -135,6 +129,7 @@ export default function Home() {
     await fetchForecast();
     await fetchInsights();
     await fetchRevenueIntel();
+    await fetchTeam();
   };
 
   useEffect(() => {
@@ -166,6 +161,45 @@ export default function Home() {
     setPrice("");
     setCategory("General");
     refreshAll();
+  };
+
+  const addTeamMember = async () => {
+    if (!memberEmail) {
+      alert("Enter member email");
+      return;
+    }
+
+    await fetch(`${API_URL}/team`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: memberEmail,
+        role: memberRole,
+      }),
+    });
+
+    setMemberEmail("");
+    setMemberRole("employee");
+    fetchTeam();
+  };
+
+  const askAI = async () => {
+    if (!chatMessage) return;
+
+    const res = await fetch(`${API_URL}/ai-chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: chatMessage,
+      }),
+    });
+
+    const data = await res.json();
+    setChatReply(data.reply);
   };
 
   const generateInvoice = (
@@ -326,6 +360,7 @@ export default function Home() {
           <p style={navItem}>AI Forecast</p>
           <p style={navItem}>AI Advisor</p>
           <p style={navItem}>Revenue Intelligence</p>
+          <p style={navItem}>Team</p>
         </nav>
 
         <button onClick={logout} style={logoutButton}>
@@ -511,6 +546,74 @@ export default function Home() {
         </section>
 
         <section style={darkMode ? darkPanel : panel}>
+          <h2>👥 Team Management</h2>
+
+          <div style={formGrid}>
+            <input
+              placeholder="Member Email"
+              value={memberEmail}
+              onChange={(e) => setMemberEmail(e.target.value)}
+              style={inputStyle}
+            />
+
+            <select
+              value={memberRole}
+              onChange={(e) => setMemberRole(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="owner">Owner</option>
+              <option value="manager">Manager</option>
+              <option value="employee">Employee</option>
+            </select>
+
+            <button onClick={addTeamMember} style={primaryButton}>
+              Add Member
+            </button>
+          </div>
+
+          <div style={{ marginTop: "20px" }}>
+            {team.length === 0 ? (
+              <p style={darkMode ? darkMutedText : mutedText}>
+                No team members found.
+              </p>
+            ) : (
+              team.map((member) => (
+                <div
+                  key={member.id}
+                  style={darkMode ? darkInsightCard : insightCard}
+                >
+                  <strong>{member.email}</strong>
+
+                  <br />
+                  <br />
+
+                  <select
+                    value={member.role}
+                    onChange={(e) => updateTeamRole(member.id, e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="owner">Owner</option>
+                    <option value="manager">Manager</option>
+                    <option value="employee">Employee</option>
+                  </select>
+
+                  <button
+                    onClick={() => deleteTeamMember(member.id)}
+                    style={{
+                      ...invoiceButton,
+                      background: "#dc2626",
+                      marginLeft: "10px",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section style={darkMode ? darkPanel : panel}>
           <h2>Add New Product</h2>
 
           <div style={formGrid}>
@@ -620,6 +723,7 @@ export default function Home() {
             ))}
           </div>
         </section>
+
         <section style={darkMode ? darkPanel : panel}>
           <h2>🤖 StockSathi AI Assistant</h2>
 
@@ -863,7 +967,6 @@ const secondaryButton = {
   border: "none",
   borderRadius: "12px",
   cursor: "pointer",
-  marginLeft: "10px",
 };
 
 const successButton = {
