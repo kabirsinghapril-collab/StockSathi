@@ -257,3 +257,140 @@ def business_insights():
             insights.append(f"✅ {name} stock level looks healthy.")
 
     return {"insights": insights}
+    @app.get("/revenue-intelligence")
+    def revenue_intelligence():
+        products_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=*",
+        headers=headers,
+    )
+
+    sales_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/sales?select=*",
+        headers=headers,
+    )
+
+    products = products_response.json()
+    sales = sales_response.json()
+
+    total_revenue = sum(float(sale["total_amount"]) for sale in sales)
+    total_items_sold = sum(int(sale["quantity_sold"]) for sale in sales)
+
+    product_sales = {}
+
+    for sale in sales:
+        name = sale.get("product_name", "Unknown")
+        qty = int(sale.get("quantity_sold", 0))
+        amount = float(sale.get("total_amount", 0))
+
+        if name not in product_sales:
+            product_sales[name] = {"quantity": 0, "revenue": 0}
+
+        product_sales[name]["quantity"] += qty
+        product_sales[name]["revenue"] += amount
+
+    top_product = None
+
+    if product_sales:
+        top_product = max(
+            product_sales.items(),
+            key=lambda item: item[1]["quantity"],
+        )
+
+    low_stock_products = []
+
+    for product in products:
+        name = product.get("name", "")
+        if not name:
+            continue
+
+        quantity = int(product.get("quantity", 0))
+        threshold = int(product.get("low_stock_threshold", 5))
+
+        if quantity <= threshold:
+            low_stock_products.append({
+                "name": name,
+                "quantity": quantity,
+                "threshold": threshold,
+            })
+
+    return {
+        "total_revenue": total_revenue,
+        "total_items_sold": total_items_sold,
+        "top_product": {
+            "name": top_product[0] if top_product else "No sales yet",
+            "quantity_sold": top_product[1]["quantity"] if top_product else 0,
+            "revenue": top_product[1]["revenue"] if top_product else 0,
+        },
+        "low_stock_count": len(low_stock_products),
+        "low_stock_products": low_stock_products,
+    }
+@app.get("/revenue-intelligence")
+def revenue_intelligence():
+    products_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=*",
+        headers=headers,
+    )
+
+    sales_response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/sales?select=*",
+        headers=headers,
+    )
+
+    products = products_response.json()
+    sales = sales_response.json()
+
+    total_revenue = sum(float(sale["total_amount"]) for sale in sales)
+    total_items_sold = sum(int(sale["quantity_sold"]) for sale in sales)
+
+    product_sales = {}
+
+    for sale in sales:
+        name = sale.get("product_name", "Unknown")
+        qty = int(sale.get("quantity_sold", 0))
+        amount = float(sale.get("total_amount", 0))
+
+        if name not in product_sales:
+            product_sales[name] = {"quantity": 0, "revenue": 0}
+
+        product_sales[name]["quantity"] += qty
+        product_sales[name]["revenue"] += amount
+
+    if product_sales:
+        top_product = max(product_sales.items(), key=lambda item: item[1]["quantity"])
+        top_product_data = {
+            "name": top_product[0],
+            "quantity_sold": top_product[1]["quantity"],
+            "revenue": top_product[1]["revenue"],
+        }
+    else:
+        top_product_data = {
+            "name": "No sales yet",
+            "quantity_sold": 0,
+            "revenue": 0,
+        }
+
+    low_stock_products = []
+
+    for product in products:
+        name = product.get("name", "")
+
+        if not name:
+            continue
+
+        quantity = int(product.get("quantity", 0))
+        threshold = int(product.get("low_stock_threshold", 5))
+
+        if quantity <= threshold:
+            low_stock_products.append({
+                "name": name,
+                "quantity": quantity,
+                "threshold": threshold,
+            })
+
+    return {
+        "total_revenue": total_revenue,
+        "total_items_sold": total_items_sold,
+        "top_product": top_product_data,
+        "low_stock_count": len(low_stock_products),
+        "low_stock_products": low_stock_products,
+    }

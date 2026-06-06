@@ -15,6 +15,7 @@ const ResponsiveContainer = dynamic(
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+  const [darkMode, setDarkMode] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +24,7 @@ export default function Home() {
   const [sales, setSales] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
+  const [revenueIntel, setRevenueIntel] = useState<any>(null);
 
   const [summary, setSummary] = useState({
     total_revenue: 0,
@@ -53,6 +55,7 @@ export default function Home() {
       email,
       password,
     });
+
     if (error) alert(error.message);
   };
 
@@ -61,6 +64,7 @@ export default function Home() {
       email,
       password,
     });
+
     if (error) alert(error.message);
     else alert("Signup done. Now login.");
   };
@@ -99,12 +103,19 @@ export default function Home() {
     setInsights(Array.isArray(data.insights) ? data.insights : []);
   };
 
+  const fetchRevenueIntel = async () => {
+    const res = await fetch(`${API_URL}/revenue-intelligence`);
+    const data = await res.json();
+    setRevenueIntel(data);
+  };
+
   const refreshAll = async () => {
     await fetchProducts();
     await fetchSales();
     await fetchSummary();
     await fetchForecast();
     await fetchInsights();
+    await fetchRevenueIntel();
   };
 
   useEffect(() => {
@@ -279,7 +290,7 @@ export default function Home() {
   }));
 
   return (
-    <main style={appShell}>
+    <main style={darkMode ? darkAppShell : appShell}>
       <aside style={sidebar}>
         <div style={brand}>
           <div style={brandIcon}>📦</div>
@@ -295,6 +306,7 @@ export default function Home() {
           <p style={navItem}>Sales</p>
           <p style={navItem}>AI Forecast</p>
           <p style={navItem}>AI Advisor</p>
+          <p style={navItem}>Revenue Intelligence</p>
         </nav>
 
         <button onClick={logout} style={logoutButton}>
@@ -307,12 +319,23 @@ export default function Home() {
           <div>
             <p style={eyebrow}>Welcome back</p>
             <h1 style={heroTitle}>Inventory Command Center</h1>
-            <p style={mutedText}>Logged in as {session.user.email}</p>
+            <p style={darkMode ? darkMutedText : mutedText}>
+              Logged in as {session.user.email}
+            </p>
           </div>
 
-          <button onClick={refreshAll} style={primaryButton}>
-            Refresh Data
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              style={primaryButton}
+            >
+              {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+            </button>
+
+            <button onClick={refreshAll} style={primaryButton}>
+              Refresh Data
+            </button>
+          </div>
         </div>
 
         <div style={statsGrid}>
@@ -345,11 +368,13 @@ export default function Home() {
         </div>
 
         <div style={twoColumn}>
-          <section style={panel}>
+          <section style={darkMode ? darkPanel : panel}>
             <h2>📊 Stock Analytics</h2>
 
             {chartData.length === 0 ? (
-              <p style={mutedText}>No chart data yet.</p>
+              <p style={darkMode ? darkMutedText : mutedText}>
+                No chart data yet.
+              </p>
             ) : (
               <div style={{ width: "100%", height: "320px" }}>
                 <ResponsiveContainer width="100%" height={300}>
@@ -358,18 +383,20 @@ export default function Home() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="quantity" fill="#111827" />
+                    <Bar dataKey="quantity" fill="#2563eb" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
           </section>
 
-          <section style={panel}>
+          <section style={darkMode ? darkPanel : panel}>
             <h2>🤖 AI Forecast</h2>
 
             {cleanForecast.length === 0 ? (
-              <p style={mutedText}>No forecast data yet.</p>
+              <p style={darkMode ? darkMutedText : mutedText}>
+                No forecast data yet.
+              </p>
             ) : (
               cleanForecast.slice(0, 4).map((item) => (
                 <div key={item.product_id} style={forecastCard(item.risk)}>
@@ -384,21 +411,87 @@ export default function Home() {
           </section>
         </div>
 
-        <section style={panel}>
+        <section style={darkMode ? darkPanel : panel}>
           <h2>🤖 AI Business Advisor</h2>
 
           {insights.length === 0 ? (
-            <p style={mutedText}>No insights available yet.</p>
+            <p style={darkMode ? darkMutedText : mutedText}>
+              No insights available yet.
+            </p>
           ) : (
             insights.map((item, index) => (
-              <div key={index} style={insightCard}>
+              <div key={index} style={darkMode ? darkInsightCard : insightCard}>
                 {item}
               </div>
             ))
           )}
         </section>
 
-        <section style={panel}>
+        <section style={darkMode ? darkPanel : panel}>
+          <h2>📈 Revenue Intelligence</h2>
+
+          {!revenueIntel ? (
+            <p style={darkMode ? darkMutedText : mutedText}>
+              Loading revenue data...
+            </p>
+          ) : (
+            <>
+              <div style={statsGrid}>
+                <StatCard
+                  title="Revenue Intelligence"
+                  value={`₹${revenueIntel.total_revenue.toLocaleString()}`}
+                  tone="#ecfdf5"
+                />
+
+                <StatCard
+                  title="Items Sold"
+                  value={revenueIntel.total_items_sold}
+                  tone="#eff6ff"
+                />
+
+                <StatCard
+                  title="Low Stock Products"
+                  value={revenueIntel.low_stock_count}
+                  tone="#fff7ed"
+                />
+              </div>
+
+              <div style={darkMode ? darkInsightCard : insightCard}>
+                🏆 Top Product:
+                <strong> {revenueIntel.top_product.name}</strong>
+                <br />
+                Sold: {revenueIntel.top_product.quantity_sold}
+                <br />
+                Revenue: ₹{revenueIntel.top_product.revenue.toLocaleString()}
+              </div>
+
+              <h3>⚠️ Low Stock Alerts</h3>
+
+              {revenueIntel.low_stock_products.length === 0 ? (
+                <p style={darkMode ? darkMutedText : mutedText}>
+                  No low stock products.
+                </p>
+              ) : (
+                revenueIntel.low_stock_products.map(
+                  (item: any, index: number) => (
+                    <div
+                      key={index}
+                      style={darkMode ? darkInsightCard : insightCard}
+                    >
+                      <strong>{item.name}</strong>
+                      <br />
+                      Current Stock: {item.quantity}
+                      <br />
+                      Threshold: {item.threshold}
+                    </div>
+                  ),
+                )
+              )}
+            </>
+          )}
+        </section>
+
+        <section style={darkMode ? darkPanel : panel}>
           <h2>Add New Product</h2>
 
           <div style={formGrid}>
@@ -436,7 +529,7 @@ export default function Home() {
           </button>
         </section>
 
-        <section style={panel}>
+        <section style={darkMode ? darkPanel : panel}>
           <div style={sectionHeader}>
             <h2>Products & Sales</h2>
 
@@ -462,9 +555,14 @@ export default function Home() {
 
           <div style={productGrid}>
             {filteredProducts.map((product) => (
-              <div key={product.id} style={productCard}>
+              <div
+                key={product.id}
+                style={darkMode ? darkProductCard : productCard}
+              >
                 <h3>{product.name}</h3>
-                <p style={mutedText}>{product.category || "General"}</p>
+                <p style={darkMode ? darkMutedText : mutedText}>
+                  {product.category || "General"}
+                </p>
                 <p>
                   Stock: <strong>{product.quantity}</strong>
                 </p>
@@ -504,11 +602,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section style={panel}>
+        <section style={darkMode ? darkPanel : panel}>
           <h2>💰 Sales History</h2>
 
           {sales.length === 0 ? (
-            <p style={mutedText}>No sales yet.</p>
+            <p style={darkMode ? darkMutedText : mutedText}>No sales yet.</p>
           ) : (
             sales.slice(0, 8).map((sale) => (
               <div key={sale.id} style={saleRow}>
@@ -539,6 +637,14 @@ const appShell = {
   minHeight: "100vh",
   background: "#f8fafc",
   fontFamily: "Inter, Arial",
+};
+
+const darkAppShell = {
+  display: "flex",
+  minHeight: "100vh",
+  background: "#020617",
+  fontFamily: "Inter, Arial",
+  color: "#e5e7eb",
 };
 
 const sidebar = {
@@ -643,6 +749,15 @@ const panel = {
   boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
 };
 
+const darkPanel = {
+  background: "#0f172a",
+  padding: "24px",
+  borderRadius: "22px",
+  border: "1px solid #1e293b",
+  marginBottom: "24px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.35)",
+};
+
 const formGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
@@ -698,6 +813,10 @@ const mutedText = {
   color: "#64748b",
 };
 
+const darkMutedText = {
+  color: "#94a3b8",
+};
+
 const smallMuted = {
   color: "#94a3b8",
   margin: "0 0 8px 0",
@@ -723,6 +842,13 @@ const productCard = {
   background: "#f9fafb",
 };
 
+const darkProductCard = {
+  padding: "18px",
+  borderRadius: "18px",
+  border: "1px solid #1e293b",
+  background: "#111827",
+};
+
 const saleRow = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr 1fr 2fr",
@@ -736,6 +862,14 @@ const insightCard = {
   borderRadius: "14px",
   background: "#f8fafc",
   border: "1px solid #e2e8f0",
+};
+
+const darkInsightCard = {
+  padding: "14px",
+  marginBottom: "10px",
+  borderRadius: "14px",
+  background: "#111827",
+  border: "1px solid #1e293b",
 };
 
 const authPage = {
