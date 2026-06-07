@@ -811,49 +811,51 @@ function StatCard({ title, value, tone = "white" }: any) {
     </div>
   );
 }
-
 const appShell = {
   display: "flex",
   minHeight: "100vh",
-  background: "#f8fafc",
+  background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 45%, #fdf2f8 100%)",
   fontFamily: "Inter, Arial",
 };
 
 const darkAppShell = {
   display: "flex",
   minHeight: "100vh",
-  background: "#020617",
+  background:
+    "radial-gradient(circle at top left, #1e1b4b, #020617 45%, #000000)",
   fontFamily: "Inter, Arial",
   color: "#e5e7eb",
 };
 
 const sidebar = {
   width: "260px",
-  background: "#020617",
+  background: "linear-gradient(180deg, #020617 0%, #111827 55%, #1e1b4b 100%)",
   color: "white",
   padding: "24px",
   position: "fixed" as const,
   height: "100vh",
+  borderRight: "1px solid rgba(255,255,255,0.08)",
 };
 
 const mainContent = {
   marginLeft: "308px",
-  padding: "32px",
+  padding: "36px",
   width: "100%",
 };
 
 const brand = {
   display: "flex",
-  gap: "12px",
+  gap: "14px",
   alignItems: "center",
-  marginBottom: "40px",
+  marginBottom: "42px",
 };
 
 const brandIcon = {
-  background: "#2563eb",
-  padding: "12px",
-  borderRadius: "14px",
-  fontSize: "24px",
+  background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+  padding: "16px",
+  borderRadius: "20px",
+  fontSize: "26px",
+  boxShadow: "0 18px 40px rgba(37,99,235,0.35)",
 };
 
 const navBox = {
@@ -862,30 +864,33 @@ const navBox = {
 };
 
 const navItem = {
-  padding: "12px",
-  color: "#94a3b8",
+  padding: "13px",
+  color: "#cbd5e1",
+  borderRadius: "14px",
 };
 
 const navItemActive = {
-  padding: "12px",
-  background: "#1e293b",
-  borderRadius: "12px",
+  padding: "13px",
+  background: "rgba(255,255,255,0.12)",
+  borderRadius: "14px",
 };
 
 const logoutButton = {
   marginTop: "40px",
-  padding: "12px",
+  padding: "13px",
   width: "100%",
   border: "none",
-  borderRadius: "12px",
+  borderRadius: "16px",
   cursor: "pointer",
+  background: "rgba(255,255,255,0.12)",
+  color: "white",
 };
 
 const hero = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: "28px",
+  marginBottom: "30px",
 };
 
 const eyebrow = {
@@ -895,96 +900,101 @@ const eyebrow = {
 };
 
 const heroTitle = {
-  fontSize: "42px",
+  fontSize: "48px",
   margin: "6px 0",
+  letterSpacing: "-1.5px",
 };
 
 const statsGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: "16px",
-  marginBottom: "24px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+  gap: "18px",
+  marginBottom: "26px",
 };
 
 const statCard = {
-  padding: "22px",
-  borderRadius: "18px",
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
+  padding: "24px",
+  borderRadius: "24px",
+  border: "1px solid rgba(255,255,255,0.7)",
+  boxShadow: "0 22px 45px rgba(15,23,42,0.10)",
 };
 
 const twoColumn = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr",
-  gap: "20px",
-  marginBottom: "24px",
+  gap: "24px",
+  marginBottom: "26px",
 };
 
 const panel = {
-  background: "white",
-  padding: "24px",
-  borderRadius: "22px",
-  border: "1px solid #e5e7eb",
-  marginBottom: "24px",
-  boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
+  background: "rgba(255,255,255,0.82)",
+  backdropFilter: "blur(18px)",
+  padding: "28px",
+  borderRadius: "30px",
+  border: "1px solid rgba(255,255,255,0.7)",
+  marginBottom: "28px",
+  boxShadow: "0 24px 60px rgba(15,23,42,0.10)",
 };
 
 const darkPanel = {
-  background: "#0f172a",
-  padding: "24px",
-  borderRadius: "22px",
-  border: "1px solid #1e293b",
-  marginBottom: "24px",
-  boxShadow: "0 10px 25px rgba(0,0,0,0.35)",
+  background: "rgba(15,23,42,0.82)",
+  backdropFilter: "blur(18px)",
+  padding: "28px",
+  borderRadius: "30px",
+  border: "1px solid rgba(148,163,184,0.18)",
+  marginBottom: "28px",
+  boxShadow: "0 24px 70px rgba(0,0,0,0.45)",
 };
 
 const formGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: "12px",
+  gap: "14px",
 };
 
 const inputStyle = {
-  padding: "12px 14px",
+  padding: "13px 15px",
   border: "1px solid #d1d5db",
-  borderRadius: "12px",
+  borderRadius: "16px",
   marginBottom: "10px",
+  outline: "none",
 };
 
 const primaryButton = {
-  padding: "12px 18px",
-  background: "#111827",
+  padding: "13px 20px",
+  background: "linear-gradient(135deg, #111827, #2563eb)",
   color: "white",
   border: "none",
-  borderRadius: "12px",
+  borderRadius: "16px",
   cursor: "pointer",
+  boxShadow: "0 12px 30px rgba(37,99,235,0.28)",
 };
 
 const secondaryButton = {
   padding: "12px 18px",
-  background: "#2563eb",
+  background: "linear-gradient(135deg, #2563eb, #7c3aed)",
   color: "white",
   border: "none",
-  borderRadius: "12px",
+  borderRadius: "16px",
   cursor: "pointer",
 };
 
 const successButton = {
-  padding: "10px 14px",
-  background: "#16a34a",
+  padding: "11px 15px",
+  background: "linear-gradient(135deg, #16a34a, #22c55e)",
   color: "white",
   border: "none",
-  borderRadius: "12px",
+  borderRadius: "15px",
   cursor: "pointer",
   marginRight: "8px",
 };
 
 const invoiceButton = {
-  padding: "10px 14px",
-  background: "#2563eb",
+  padding: "11px 15px",
+  background: "linear-gradient(135deg, #2563eb, #06b6d4)",
   color: "white",
   border: "none",
-  borderRadius: "12px",
+  borderRadius: "15px",
   cursor: "pointer",
 };
 
@@ -1010,44 +1020,45 @@ const sectionHeader = {
 
 const productGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: "16px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: "18px",
 };
 
 const productCard = {
-  padding: "18px",
-  borderRadius: "18px",
-  border: "1px solid #e5e7eb",
-  background: "#f9fafb",
+  padding: "20px",
+  borderRadius: "24px",
+  border: "1px solid rgba(226,232,240,0.9)",
+  background: "rgba(255,255,255,0.75)",
+  boxShadow: "0 18px 35px rgba(15,23,42,0.08)",
 };
 
 const darkProductCard = {
-  padding: "18px",
-  borderRadius: "18px",
+  padding: "20px",
+  borderRadius: "24px",
   border: "1px solid #1e293b",
-  background: "#111827",
+  background: "rgba(17,24,39,0.85)",
 };
 
 const saleRow = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr 1fr 2fr",
-  padding: "14px",
+  padding: "15px",
   borderBottom: "1px solid #e5e7eb",
 };
 
 const insightCard = {
-  padding: "14px",
-  marginBottom: "10px",
-  borderRadius: "14px",
-  background: "#f8fafc",
+  padding: "16px",
+  marginBottom: "12px",
+  borderRadius: "18px",
+  background: "rgba(248,250,252,0.9)",
   border: "1px solid #e2e8f0",
 };
 
 const darkInsightCard = {
-  padding: "14px",
-  marginBottom: "10px",
-  borderRadius: "14px",
-  background: "#111827",
+  padding: "16px",
+  marginBottom: "12px",
+  borderRadius: "18px",
+  background: "rgba(17,24,39,0.9)",
   border: "1px solid #1e293b",
 };
 
@@ -1055,38 +1066,40 @@ const authPage = {
   minHeight: "100vh",
   display: "grid",
   placeItems: "center",
-  background: "linear-gradient(135deg,#020617,#1d4ed8)",
+  background: "radial-gradient(circle at top left, #2563eb, #020617 55%, #000)",
 };
 
 const authCard = {
-  background: "white",
-  padding: "36px",
-  borderRadius: "24px",
-  maxWidth: "420px",
-  boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+  background: "rgba(255,255,255,0.92)",
+  backdropFilter: "blur(18px)",
+  padding: "40px",
+  borderRadius: "30px",
+  maxWidth: "430px",
+  boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
 };
 
 const logoBox = {
-  fontSize: "42px",
+  fontSize: "44px",
 };
 
 const authTitle = {
-  fontSize: "36px",
+  fontSize: "38px",
   margin: "8px 0",
 };
 
 const forecastCard = (risk: string) => ({
-  padding: "14px",
-  borderRadius: "14px",
-  marginBottom: "12px",
+  padding: "16px",
+  borderRadius: "20px",
+  marginBottom: "14px",
   background:
     risk === "High" ? "#fef2f2" : risk === "Medium" ? "#fffbeb" : "#ecfdf5",
   border: "1px solid #e5e7eb",
+  boxShadow: "0 14px 28px rgba(15,23,42,0.06)",
 });
 
 const badge = (risk: string) => ({
   display: "inline-block",
-  padding: "6px 10px",
+  padding: "7px 12px",
   borderRadius: "999px",
   fontSize: "12px",
   fontWeight: "bold",
