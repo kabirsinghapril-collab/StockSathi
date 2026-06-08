@@ -184,7 +184,29 @@ export default function Home() {
     setMemberRole("employee");
     fetchTeam();
   };
+  const updateTeamRole = async (memberId: number, newRole: string) => {
+    await fetch(`${API_URL}/team/${memberId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        role: newRole,
+      }),
+    });
 
+    fetchTeam();
+  };
+
+  const deleteTeamMember = async (memberId: number) => {
+    if (!confirm("Delete this member?")) return;
+
+    await fetch(`${API_URL}/team/${memberId}`, {
+      method: "DELETE",
+    });
+
+    fetchTeam();
+  };
   const askAI = async () => {
     if (!chatMessage) return;
 
@@ -805,16 +827,18 @@ export default function Home() {
 
 function StatCard({ title, value, tone = "white" }: any) {
   return (
-    <div style={{ ...statCard, background: tone }}>
-      <p style={smallMuted}>{title}</p>
-      <h2 style={{ margin: 0 }}>{value}</h2>
+    <div style={premiumStatCard}>
+      <p style={premiumStatLabel}>{title}</p>
+      <h2 style={premiumStatValue}>{value}</h2>
     </div>
   );
 }
+
 const appShell = {
   display: "flex",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 45%, #fdf2f8 100%)",
+  background:
+    "radial-gradient(circle at top left, #dbeafe 0%, #f8fafc 30%, #fdf2f8 100%)",
   fontFamily: "Inter, Arial",
 };
 
@@ -822,24 +846,25 @@ const darkAppShell = {
   display: "flex",
   minHeight: "100vh",
   background:
-    "radial-gradient(circle at top left, #1e1b4b, #020617 45%, #000000)",
+    "radial-gradient(circle at top left, #312e81 0%, #020617 45%, #000000 100%)",
   fontFamily: "Inter, Arial",
   color: "#e5e7eb",
 };
 
 const sidebar = {
-  width: "260px",
-  background: "linear-gradient(180deg, #020617 0%, #111827 55%, #1e1b4b 100%)",
+  width: "270px",
+  background: "linear-gradient(180deg, rgba(2,6,23,0.98), rgba(30,27,75,0.96))",
   color: "white",
-  padding: "24px",
+  padding: "26px",
   position: "fixed" as const,
   height: "100vh",
-  borderRight: "1px solid rgba(255,255,255,0.08)",
+  borderRight: "1px solid rgba(255,255,255,0.10)",
+  boxShadow: "20px 0 60px rgba(15,23,42,0.25)",
 };
 
 const mainContent = {
-  marginLeft: "308px",
-  padding: "36px",
+  marginLeft: "322px",
+  padding: "40px",
   width: "100%",
 };
 
@@ -847,155 +872,201 @@ const brand = {
   display: "flex",
   gap: "14px",
   alignItems: "center",
-  marginBottom: "42px",
+  marginBottom: "44px",
 };
 
 const brandIcon = {
-  background: "linear-gradient(135deg, #2563eb, #7c3aed)",
-  padding: "16px",
-  borderRadius: "20px",
-  fontSize: "26px",
-  boxShadow: "0 18px 40px rgba(37,99,235,0.35)",
+  background: "linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)",
+  padding: "17px",
+  borderRadius: "24px",
+  fontSize: "28px",
+  boxShadow: "0 22px 55px rgba(99,102,241,0.45)",
 };
 
 const navBox = {
   display: "grid",
-  gap: "10px",
+  gap: "12px",
 };
 
 const navItem = {
-  padding: "13px",
+  padding: "14px 16px",
   color: "#cbd5e1",
-  borderRadius: "14px",
+  borderRadius: "18px",
+  fontWeight: 600,
 };
 
 const navItemActive = {
-  padding: "13px",
-  background: "rgba(255,255,255,0.12)",
-  borderRadius: "14px",
+  padding: "14px 16px",
+  background:
+    "linear-gradient(135deg, rgba(37,99,235,0.35), rgba(124,58,237,0.25))",
+  borderRadius: "18px",
+  boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
 };
 
 const logoutButton = {
-  marginTop: "40px",
-  padding: "13px",
+  marginTop: "42px",
+  padding: "14px",
   width: "100%",
-  border: "none",
-  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: "18px",
   cursor: "pointer",
-  background: "rgba(255,255,255,0.12)",
+  background: "rgba(255,255,255,0.10)",
   color: "white",
+  fontWeight: 700,
 };
 
 const hero = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: "30px",
+  marginBottom: "34px",
+  padding: "34px",
+  borderRadius: "34px",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.88), rgba(239,246,255,0.78))",
+  border: "1px solid rgba(255,255,255,0.75)",
+  boxShadow: "0 30px 80px rgba(15,23,42,0.12)",
+  backdropFilter: "blur(20px)",
 };
 
 const eyebrow = {
   color: "#2563eb",
-  fontWeight: "bold",
+  fontWeight: "900",
   margin: 0,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase" as const,
+  fontSize: "13px",
 };
 
 const heroTitle = {
-  fontSize: "48px",
-  margin: "6px 0",
-  letterSpacing: "-1.5px",
+  fontSize: "54px",
+  margin: "8px 0",
+  letterSpacing: "-2px",
+  lineHeight: 1,
+  background: "linear-gradient(135deg, #020617, #2563eb, #7c3aed)",
+  WebkitBackgroundClip: "text",
+  color: "transparent",
 };
 
 const statsGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-  gap: "18px",
-  marginBottom: "26px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+  gap: "20px",
+  marginBottom: "30px",
 };
 
-const statCard = {
-  padding: "24px",
-  borderRadius: "24px",
-  border: "1px solid rgba(255,255,255,0.7)",
-  boxShadow: "0 22px 45px rgba(15,23,42,0.10)",
+const premiumStatCard = {
+  padding: "26px",
+  borderRadius: "30px",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.82))",
+  border: "1px solid rgba(255,255,255,0.8)",
+  boxShadow: "0 28px 70px rgba(15,23,42,0.12)",
+  backdropFilter: "blur(18px)",
 };
+
+const premiumStatLabel = {
+  color: "#64748b",
+  margin: "0 0 10px 0",
+  fontSize: "14px",
+  fontWeight: 800,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.06em",
+};
+
+const premiumStatValue = {
+  margin: 0,
+  fontSize: "34px",
+  letterSpacing: "-1px",
+  color: "#020617",
+};
+
+const statCard = premiumStatCard;
 
 const twoColumn = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr",
-  gap: "24px",
-  marginBottom: "26px",
+  gap: "26px",
+  marginBottom: "30px",
 };
 
 const panel = {
-  background: "rgba(255,255,255,0.82)",
-  backdropFilter: "blur(18px)",
-  padding: "28px",
-  borderRadius: "30px",
-  border: "1px solid rgba(255,255,255,0.7)",
-  marginBottom: "28px",
-  boxShadow: "0 24px 60px rgba(15,23,42,0.10)",
+  background: "rgba(255,255,255,0.88)",
+  backdropFilter: "blur(22px)",
+  padding: "30px",
+  borderRadius: "34px",
+  border: "1px solid rgba(255,255,255,0.78)",
+  marginBottom: "30px",
+  boxShadow: "0 30px 80px rgba(15,23,42,0.11)",
 };
 
 const darkPanel = {
-  background: "rgba(15,23,42,0.82)",
-  backdropFilter: "blur(18px)",
-  padding: "28px",
-  borderRadius: "30px",
-  border: "1px solid rgba(148,163,184,0.18)",
-  marginBottom: "28px",
-  boxShadow: "0 24px 70px rgba(0,0,0,0.45)",
+  background: "rgba(15,23,42,0.86)",
+  backdropFilter: "blur(22px)",
+  padding: "30px",
+  borderRadius: "34px",
+  border: "1px solid rgba(148,163,184,0.20)",
+  marginBottom: "30px",
+  boxShadow: "0 30px 90px rgba(0,0,0,0.48)",
 };
 
 const formGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: "14px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+  gap: "16px",
 };
 
 const inputStyle = {
-  padding: "13px 15px",
-  border: "1px solid #d1d5db",
-  borderRadius: "16px",
-  marginBottom: "10px",
+  padding: "14px 16px",
+  border: "1px solid #dbeafe",
+  borderRadius: "18px",
+  marginBottom: "12px",
   outline: "none",
+  background: "rgba(255,255,255,0.95)",
+  boxShadow: "0 10px 25px rgba(15,23,42,0.05)",
 };
 
 const primaryButton = {
-  padding: "13px 20px",
-  background: "linear-gradient(135deg, #111827, #2563eb)",
+  padding: "14px 22px",
+  background: "linear-gradient(135deg, #111827, #2563eb, #7c3aed)",
   color: "white",
   border: "none",
-  borderRadius: "16px",
+  borderRadius: "18px",
   cursor: "pointer",
-  boxShadow: "0 12px 30px rgba(37,99,235,0.28)",
+  boxShadow: "0 16px 35px rgba(37,99,235,0.35)",
+  fontWeight: 800,
 };
 
 const secondaryButton = {
-  padding: "12px 18px",
+  padding: "13px 20px",
   background: "linear-gradient(135deg, #2563eb, #7c3aed)",
   color: "white",
   border: "none",
-  borderRadius: "16px",
+  borderRadius: "18px",
   cursor: "pointer",
+  boxShadow: "0 14px 30px rgba(124,58,237,0.28)",
+  fontWeight: 800,
 };
 
 const successButton = {
-  padding: "11px 15px",
+  padding: "12px 16px",
   background: "linear-gradient(135deg, #16a34a, #22c55e)",
   color: "white",
   border: "none",
-  borderRadius: "15px",
+  borderRadius: "17px",
   cursor: "pointer",
   marginRight: "8px",
+  fontWeight: 800,
 };
 
 const invoiceButton = {
-  padding: "11px 15px",
+  padding: "12px 16px",
   background: "linear-gradient(135deg, #2563eb, #06b6d4)",
   color: "white",
   border: "none",
-  borderRadius: "15px",
+  borderRadius: "17px",
   cursor: "pointer",
+  fontWeight: 800,
 };
 
 const mutedText = {
@@ -1020,45 +1091,47 @@ const sectionHeader = {
 
 const productGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "18px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))",
+  gap: "20px",
 };
 
 const productCard = {
-  padding: "20px",
-  borderRadius: "24px",
+  padding: "22px",
+  borderRadius: "28px",
   border: "1px solid rgba(226,232,240,0.9)",
-  background: "rgba(255,255,255,0.75)",
-  boxShadow: "0 18px 35px rgba(15,23,42,0.08)",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(248,250,252,0.82))",
+  boxShadow: "0 22px 50px rgba(15,23,42,0.09)",
 };
 
 const darkProductCard = {
-  padding: "20px",
-  borderRadius: "24px",
+  padding: "22px",
+  borderRadius: "28px",
   border: "1px solid #1e293b",
-  background: "rgba(17,24,39,0.85)",
+  background: "rgba(17,24,39,0.88)",
 };
 
 const saleRow = {
   display: "grid",
   gridTemplateColumns: "2fr 1fr 1fr 2fr",
-  padding: "15px",
+  padding: "16px",
   borderBottom: "1px solid #e5e7eb",
 };
 
 const insightCard = {
-  padding: "16px",
-  marginBottom: "12px",
-  borderRadius: "18px",
-  background: "rgba(248,250,252,0.9)",
+  padding: "17px",
+  marginBottom: "13px",
+  borderRadius: "22px",
+  background: "rgba(248,250,252,0.96)",
   border: "1px solid #e2e8f0",
+  boxShadow: "0 14px 30px rgba(15,23,42,0.06)",
 };
 
 const darkInsightCard = {
-  padding: "16px",
-  marginBottom: "12px",
-  borderRadius: "18px",
-  background: "rgba(17,24,39,0.9)",
+  padding: "17px",
+  marginBottom: "13px",
+  borderRadius: "22px",
+  background: "rgba(17,24,39,0.92)",
   border: "1px solid #1e293b",
 };
 
@@ -1066,40 +1139,46 @@ const authPage = {
   minHeight: "100vh",
   display: "grid",
   placeItems: "center",
-  background: "radial-gradient(circle at top left, #2563eb, #020617 55%, #000)",
+  background:
+    "radial-gradient(circle at top left, #2563eb, #7c3aed 35%, #020617 70%, #000)",
 };
 
 const authCard = {
-  background: "rgba(255,255,255,0.92)",
-  backdropFilter: "blur(18px)",
-  padding: "40px",
-  borderRadius: "30px",
-  maxWidth: "430px",
-  boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+  background: "rgba(255,255,255,0.94)",
+  backdropFilter: "blur(22px)",
+  padding: "44px",
+  borderRadius: "36px",
+  maxWidth: "450px",
+  boxShadow: "0 35px 100px rgba(0,0,0,0.40)",
 };
 
 const logoBox = {
-  fontSize: "44px",
+  fontSize: "48px",
 };
 
 const authTitle = {
-  fontSize: "38px",
+  fontSize: "42px",
   margin: "8px 0",
+  letterSpacing: "-1px",
 };
 
 const forecastCard = (risk: string) => ({
-  padding: "16px",
-  borderRadius: "20px",
-  marginBottom: "14px",
+  padding: "18px",
+  borderRadius: "24px",
+  marginBottom: "15px",
   background:
-    risk === "High" ? "#fef2f2" : risk === "Medium" ? "#fffbeb" : "#ecfdf5",
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 14px 28px rgba(15,23,42,0.06)",
+    risk === "High"
+      ? "linear-gradient(135deg,#fee2e2,#fff1f2)"
+      : risk === "Medium"
+        ? "linear-gradient(135deg,#fef3c7,#fffbeb)"
+        : "linear-gradient(135deg,#dcfce7,#ecfdf5)",
+  border: "1px solid rgba(226,232,240,0.9)",
+  boxShadow: "0 18px 35px rgba(15,23,42,0.08)",
 });
 
 const badge = (risk: string) => ({
   display: "inline-block",
-  padding: "7px 12px",
+  padding: "8px 13px",
   borderRadius: "999px",
   fontSize: "12px",
   fontWeight: "bold",
