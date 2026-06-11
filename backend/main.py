@@ -518,6 +518,109 @@ def delete_team_member(member_id: int):
         "message": "Team member deleted",
         "status": response.status_code,
     }
-@app.get("/team")
-def get_team():
-    return {"message": "Team API working"}
+
+@app.get("/suppliers")
+def get_suppliers():
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/suppliers?select=*&order=id.desc",
+        headers=headers,
+    )
+    return response.json()
+
+
+@app.post("/suppliers")
+def add_supplier(supplier: dict):
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/suppliers",
+        headers=headers,
+        json=supplier,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Supplier added",
+            "status": response.status_code,
+        }
+
+
+@app.put("/suppliers/{supplier_id}")
+def update_supplier(supplier_id: int, supplier: dict):
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/suppliers?id=eq.{supplier_id}",
+        headers=headers,
+        json=supplier,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Supplier updated",
+            "status": response.status_code,
+        }
+
+
+@app.delete("/suppliers/{supplier_id}")
+def delete_supplier(supplier_id: int):
+    response = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/suppliers?id=eq.{supplier_id}",
+        headers=headers,
+    )
+
+    return {
+        "message": "Supplier deleted",
+        "status": response.status_code,
+    }@app.get("/suppliers")
+def get_suppliers():
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/suppliers?select=*&order=id.desc",
+        headers=headers,
+    )
+    return response.json()
+@app.post("/suppliers")
+def add_supplier(supplier: dict):
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/suppliers",
+        headers=headers,
+        json=supplier,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Supplier added",
+            "status": response.status_code,
+        }
+
+
+@app.put("/suppliers/{supplier_id}")
+def update_supplier(supplier_id: int, supplier: dict):
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/suppliers?id=eq.{supplier_id}",
+        headers=headers,
+        json=supplier,
+    )
+
+    try:
+        return response.json()
+    except:
+        return {
+            "message": "Supplier updated",
+            "status": response.status_code,
+        }
+
+
+@app.delete("/suppliers/{supplier_id}")
+def delete_supplier(supplier_id: int):
+    response = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/suppliers?id=eq.{supplier_id}",
+        headers=headers,
+    )
+
+    return {
+        "message": "Supplier deleted",
+        "status": response.status_code,
+    }

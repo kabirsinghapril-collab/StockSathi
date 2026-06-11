@@ -46,6 +46,12 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [saleQuantities, setSaleQuantities] = useState<any>({});
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [supplierName, setSupplierName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [supplierPhone, setSupplierPhone] = useState("");
+  const [supplierEmail, setSupplierEmail] = useState("");
+  const [supplierCategory, setSupplierCategory] = useState("General");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -130,6 +136,7 @@ export default function Home() {
     await fetchInsights();
     await fetchRevenueIntel();
     await fetchTeam();
+    await fetchSuppliers();
   };
 
   useEffect(() => {
@@ -184,6 +191,11 @@ export default function Home() {
     setMemberRole("employee");
     fetchTeam();
   };
+  const fetchSuppliers = async () => {
+    const res = await fetch(`${API_URL}/suppliers`);
+    const data = await res.json();
+    setSuppliers(Array.isArray(data) ? data : []);
+  };
   const updateTeamRole = async (memberId: number, newRole: string) => {
     await fetch(`${API_URL}/team/${memberId}`, {
       method: "PUT",
@@ -207,6 +219,7 @@ export default function Home() {
 
     fetchTeam();
   };
+
   const askAI = async () => {
     if (!chatMessage) return;
 
@@ -407,13 +420,11 @@ export default function Home() {
             >
               {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
             </button>
-
             <button onClick={refreshAll} style={primaryButton}>
               Refresh Data
             </button>
           </div>
         </div>
-
         <div style={statsGrid}>
           <StatCard title="Total Products" value={totalProducts} />
           <StatCard
@@ -443,31 +454,43 @@ export default function Home() {
           />
         </div>
 
-        <div style={twoColumn}>
-          <section style={darkMode ? darkPanel : panel}>
-            <h2>📊 Stock Analytics</h2>
+        <div style={luxuryAnalyticsGrid}>
+          <section style={darkMode ? darkLuxuryPanel : luxuryPanel}>
+            <div style={luxurySectionHeader}>
+              <div>
+                <p style={eyebrow}>Live Analytics</p>
+                <h2 style={luxuryHeading}>📊 Inventory Intelligence</h2>
+              </div>
+              <span style={luxuryPill}>Real-time Stock</span>
+            </div>
 
             {chartData.length === 0 ? (
               <p style={darkMode ? darkMutedText : mutedText}>
                 No chart data yet.
               </p>
             ) : (
-              <div style={{ width: "100%", height: "320px" }}>
-                <ResponsiveContainer width="100%" height={300}>
+              <div style={{ width: "100%", height: "360px" }}>
+                <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="quantity" fill="#2563eb" />
+                    <Bar dataKey="quantity" fill="#7c3aed" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
           </section>
 
-          <section style={darkMode ? darkPanel : panel}>
-            <h2>🤖 AI Forecast</h2>
+          <section style={darkMode ? darkLuxuryPanel : luxuryPanel}>
+            <div style={luxurySectionHeader}>
+              <div>
+                <p style={eyebrow}>Predictive AI</p>
+                <h2 style={luxuryHeading}>🤖 AI Forecast</h2>
+              </div>
+              <span style={luxuryPill}>Risk Engine</span>
+            </div>
 
             {cleanForecast.length === 0 ? (
               <p style={darkMode ? darkMutedText : mutedText}>
@@ -475,12 +498,31 @@ export default function Home() {
               </p>
             ) : (
               cleanForecast.slice(0, 4).map((item) => (
-                <div key={item.product_id} style={forecastCard(item.risk)}>
-                  <strong>{item.product_name}</strong>
-                  <p>Stock: {item.current_stock}</p>
-                  <p>7-Day Prediction: {item.predicted_7_day_sales}</p>
-                  <p>Restock: {item.recommended_restock}</p>
-                  <span style={badge(item.risk)}>{item.risk} Risk</span>
+                <div
+                  key={item.product_id}
+                  style={luxuryForecastCard(item.risk)}
+                >
+                  <div style={forecastTopRow}>
+                    <strong>{item.product_name}</strong>
+                    <span style={badge(item.risk)}>{item.risk}</span>
+                  </div>
+
+                  <div style={forecastMetricGrid}>
+                    <div>
+                      <p style={miniLabel}>Current Stock</p>
+                      <h3>{item.current_stock}</h3>
+                    </div>
+
+                    <div>
+                      <p style={miniLabel}>7-Day Demand</p>
+                      <h3>{item.predicted_7_day_sales}</h3>
+                    </div>
+
+                    <div>
+                      <p style={miniLabel}>Restock Need</p>
+                      <h3>{item.recommended_restock}</h3>
+                    </div>
+                  </div>
                 </div>
               ))
             )}
@@ -512,129 +554,80 @@ export default function Home() {
             </p>
           ) : (
             <>
-              <div style={statsGrid}>
-                <StatCard
-                  title="Revenue Intelligence"
-                  value={`₹${revenueIntel.total_revenue.toLocaleString()}`}
-                  tone="#ecfdf5"
-                />
+              <div style={luxuryRevenueGrid}>
+                <div style={luxuryRevenueCard}>
+                  <p style={miniLabel}>💰 Total Revenue</p>
+                  <h2>
+                    ₹{(revenueIntel?.total_revenue || 0).toLocaleString()}
+                  </h2>
+                </div>
 
-                <StatCard
-                  title="Items Sold"
-                  value={revenueIntel.total_items_sold}
-                  tone="#eff6ff"
-                />
+                <div style={luxuryRevenueCard}>
+                  <p style={miniLabel}>📦 Items Sold</p>
+                  <h2>{revenueIntel?.total_items_sold || 0}</h2>
+                </div>
 
-                <StatCard
-                  title="Low Stock Products"
-                  value={revenueIntel.low_stock_count}
-                  tone="#fff7ed"
-                />
+                <div style={luxuryRevenueCard}>
+                  <p style={miniLabel}>⚠ Low Stock</p>
+                  <h2>{revenueIntel?.low_stock_count || 0}</h2>
+                </div>
+
+                <div style={luxuryRevenueCard}>
+                  <p style={miniLabel}>🏆 Best Product</p>
+                  <h2>{revenueIntel?.top_product?.name || "No Data"}</h2>
+                </div>
               </div>
 
-              <div style={darkMode ? darkInsightCard : insightCard}>
-                🏆 Top Product:
-                <strong> {revenueIntel.top_product.name}</strong>
-                <br />
-                Sold: {revenueIntel.top_product.quantity_sold}
-                <br />
-                Revenue: ₹{revenueIntel.top_product.revenue.toLocaleString()}
+              <div style={luxuryTopProduct}>
+                <h3>🏆 Top Performing Product</h3>
+
+                <p>
+                  Product:
+                  <strong>
+                    {" "}
+                    {revenueIntel?.top_product?.name || "No Data"}
+                  </strong>
+                </p>
+
+                <p>
+                  Quantity Sold:
+                  <strong>
+                    {" "}
+                    {revenueIntel?.top_product?.quantity_sold || 0}
+                  </strong>
+                </p>
+
+                <p>
+                  Revenue:
+                  <strong>
+                    {" "}
+                    ₹
+                    {(revenueIntel?.top_product?.revenue || 0).toLocaleString()}
+                  </strong>
+                </p>
               </div>
 
               <h3>⚠️ Low Stock Alerts</h3>
 
-              {revenueIntel.low_stock_products.length === 0 ? (
-                <p style={darkMode ? darkMutedText : mutedText}>
-                  No low stock products.
-                </p>
-              ) : (
-                revenueIntel.low_stock_products.map(
-                  (item: any, index: number) => (
-                    <div
-                      key={index}
-                      style={darkMode ? darkInsightCard : insightCard}
-                    >
-                      <strong>{item.name}</strong>
-                      <br />
-                      Current Stock: {item.quantity}
-                      <br />
-                      Threshold: {item.threshold}
-                    </div>
-                  ),
-                )
+              {(revenueIntel?.low_stock_products || []).map(
+                (item: any, index: number) => (
+                  <div key={index} style={luxuryAlertCard}>
+                    <strong>{item.name}</strong>
+                    <p>Current Stock: {item.quantity}</p>
+                    <p>Threshold: {item.threshold}</p>
+                  </div>
+                ),
               )}
             </>
           )}
         </section>
-
         <section style={darkMode ? darkPanel : panel}>
-          <h2>👥 Team Management</h2>
+          <h2>🏭 Supplier Management</h2>
 
-          <div style={formGrid}>
-            <input
-              placeholder="Member Email"
-              value={memberEmail}
-              onChange={(e) => setMemberEmail(e.target.value)}
-              style={inputStyle}
-            />
-
-            <select
-              value={memberRole}
-              onChange={(e) => setMemberRole(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="owner">Owner</option>
-              <option value="manager">Manager</option>
-              <option value="employee">Employee</option>
-            </select>
-
-            <button onClick={addTeamMember} style={primaryButton}>
-              Add Member
-            </button>
-          </div>
-
-          <div style={{ marginTop: "20px" }}>
-            {team.length === 0 ? (
-              <p style={darkMode ? darkMutedText : mutedText}>
-                No team members found.
-              </p>
-            ) : (
-              team.map((member) => (
-                <div
-                  key={member.id}
-                  style={darkMode ? darkInsightCard : insightCard}
-                >
-                  <strong>{member.email}</strong>
-
-                  <br />
-                  <br />
-
-                  <select
-                    value={member.role}
-                    onChange={(e) => updateTeamRole(member.id, e.target.value)}
-                    style={inputStyle}
-                  >
-                    <option value="owner">Owner</option>
-                    <option value="manager">Manager</option>
-                    <option value="employee">Employee</option>
-                  </select>
-
-                  <button
-                    onClick={() => deleteTeamMember(member.id)}
-                    style={{
-                      ...invoiceButton,
-                      background: "#dc2626",
-                      marginLeft: "10px",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+          <p style={darkMode ? darkMutedText : mutedText}>
+            Supplier directory will appear here.
+          </p>
         </section>
-
         <section style={darkMode ? darkPanel : panel}>
           <h2>Add New Product</h2>
 
@@ -837,8 +830,7 @@ function StatCard({ title, value, tone = "white" }: any) {
 const appShell = {
   display: "flex",
   minHeight: "100vh",
-  background:
-    "radial-gradient(circle at top left, #dbeafe 0%, #f8fafc 30%, #fdf2f8 100%)",
+  background: "linear-gradient(135deg,#FFFFFF 0%,#F8FAFC 60%,#EFF6FF 100%)",
   fontFamily: "Inter, Arial",
 };
 
@@ -852,16 +844,15 @@ const darkAppShell = {
 };
 
 const sidebar = {
-  width: "270px",
-  background: "linear-gradient(180deg, rgba(2,6,23,0.98), rgba(30,27,75,0.96))",
+  width: "280px",
+  background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 60%, #2563EB 100%)",
   color: "white",
-  padding: "26px",
+  padding: "28px",
   position: "fixed" as const,
   height: "100vh",
-  borderRight: "1px solid rgba(255,255,255,0.10)",
-  boxShadow: "20px 0 60px rgba(15,23,42,0.25)",
+  borderRight: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "15px 0 50px rgba(30,58,138,0.25)",
 };
-
 const mainContent = {
   marginLeft: "322px",
   padding: "40px",
@@ -919,14 +910,12 @@ const hero = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: "34px",
-  padding: "34px",
-  borderRadius: "34px",
-  background:
-    "linear-gradient(135deg, rgba(255,255,255,0.88), rgba(239,246,255,0.78))",
-  border: "1px solid rgba(255,255,255,0.75)",
-  boxShadow: "0 30px 80px rgba(15,23,42,0.12)",
-  backdropFilter: "blur(20px)",
+  padding: "35px",
+  borderRadius: "32px",
+  background: "linear-gradient(135deg,#FFFFFF,#EFF6FF)",
+  border: "1px solid #BFDBFE",
+  boxShadow: "0 20px 60px rgba(30,58,138,0.08)",
+  marginBottom: "30px",
 };
 
 const eyebrow = {
@@ -939,11 +928,9 @@ const eyebrow = {
 };
 
 const heroTitle = {
-  fontSize: "54px",
-  margin: "8px 0",
-  letterSpacing: "-2px",
-  lineHeight: 1,
-  background: "linear-gradient(135deg, #020617, #2563eb, #7c3aed)",
+  fontSize: "56px",
+  fontWeight: 800,
+  background: "linear-gradient(135deg,#1E3A8A,#2563EB)",
   WebkitBackgroundClip: "text",
   color: "transparent",
 };
@@ -956,13 +943,11 @@ const statsGrid = {
 };
 
 const premiumStatCard = {
-  padding: "26px",
-  borderRadius: "30px",
-  background:
-    "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.82))",
-  border: "1px solid rgba(255,255,255,0.8)",
-  boxShadow: "0 28px 70px rgba(15,23,42,0.12)",
-  backdropFilter: "blur(18px)",
+  padding: "24px",
+  borderRadius: "24px",
+  background: "#FFFFFF",
+  border: "1px solid #DBEAFE",
+  boxShadow: "0 12px 35px rgba(30,58,138,0.06)",
 };
 
 const premiumStatLabel = {
@@ -991,13 +976,12 @@ const twoColumn = {
 };
 
 const panel = {
-  background: "rgba(255,255,255,0.88)",
-  backdropFilter: "blur(22px)",
+  background: "#FFFFFF",
   padding: "30px",
-  borderRadius: "34px",
-  border: "1px solid rgba(255,255,255,0.78)",
+  borderRadius: "30px",
   marginBottom: "30px",
-  boxShadow: "0 30px 80px rgba(15,23,42,0.11)",
+  border: "1px solid #DBEAFE",
+  boxShadow: "0 15px 45px rgba(30,58,138,0.08)",
 };
 
 const darkPanel = {
@@ -1028,13 +1012,12 @@ const inputStyle = {
 
 const primaryButton = {
   padding: "14px 22px",
-  background: "linear-gradient(135deg, #111827, #2563eb, #7c3aed)",
+  background: "linear-gradient(135deg,#1E3A8A,#2563EB)",
   color: "white",
   border: "none",
-  borderRadius: "18px",
+  borderRadius: "16px",
   cursor: "pointer",
-  boxShadow: "0 16px 35px rgba(37,99,235,0.35)",
-  fontWeight: 800,
+  fontWeight: 700,
 };
 
 const secondaryButton = {
@@ -1133,6 +1116,165 @@ const darkInsightCard = {
   borderRadius: "22px",
   background: "rgba(17,24,39,0.92)",
   border: "1px solid #1e293b",
+};
+const luxuryAnalyticsGrid = {
+  display: "grid",
+  gridTemplateColumns: "1.6fr 1fr",
+  gap: "28px",
+  marginBottom: "32px",
+};
+
+const luxuryPanel = {
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.84))",
+  backdropFilter: "blur(24px)",
+  padding: "32px",
+  borderRadius: "36px",
+  border: "1px solid rgba(255,255,255,0.85)",
+  boxShadow: "0 35px 90px rgba(15,23,42,0.13)",
+};
+
+const darkLuxuryPanel = {
+  background:
+    "linear-gradient(135deg, rgba(15,23,42,0.92), rgba(30,27,75,0.82))",
+  backdropFilter: "blur(24px)",
+  padding: "32px",
+  borderRadius: "36px",
+  border: "1px solid rgba(148,163,184,0.22)",
+  boxShadow: "0 35px 100px rgba(0,0,0,0.5)",
+};
+
+const luxurySectionHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "22px",
+};
+
+const luxuryHeading = {
+  fontSize: "30px",
+  margin: "6px 0 0 0",
+  letterSpacing: "-0.8px",
+};
+
+const luxuryPill = {
+  padding: "9px 14px",
+  borderRadius: "999px",
+  background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+  color: "white",
+  fontSize: "12px",
+  fontWeight: 900,
+};
+
+const luxuryForecastCard = (risk: string) => ({
+  padding: "20px",
+  borderRadius: "26px",
+  marginBottom: "16px",
+  background:
+    risk === "High"
+      ? "linear-gradient(135deg,#fee2e2,#fff1f2)"
+      : risk === "Medium"
+        ? "linear-gradient(135deg,#fef3c7,#fffbeb)"
+        : "linear-gradient(135deg,#dcfce7,#ecfdf5)",
+  border: "1px solid rgba(226,232,240,0.9)",
+  boxShadow: "0 20px 45px rgba(15,23,42,0.09)",
+});
+
+const forecastTopRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "14px",
+};
+
+const forecastMetricGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: "12px",
+};
+
+const miniLabel = {
+  color: "#64748b",
+  fontSize: "12px",
+  fontWeight: 800,
+  margin: 0,
+};
+const luxuryRevenueGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4,1fr)",
+  gap: "18px",
+  marginBottom: "25px",
+};
+
+const luxuryRevenueCard = {
+  padding: "24px",
+  borderRadius: "28px",
+  background: "linear-gradient(135deg,#ffffff,#eef2ff)",
+  boxShadow: "0 20px 50px rgba(15,23,42,0.08)",
+  border: "1px solid rgba(226,232,240,0.8)",
+};
+
+const luxuryTopProduct = {
+  padding: "28px",
+  borderRadius: "30px",
+  background: "linear-gradient(135deg,#dbeafe,#eef2ff)",
+  marginBottom: "20px",
+  boxShadow: "0 20px 50px rgba(37,99,235,0.12)",
+};
+
+const luxuryAlertCard = {
+  padding: "18px",
+  borderRadius: "24px",
+  marginBottom: "12px",
+  background: "linear-gradient(135deg,#fff7ed,#fffbeb)",
+  border: "1px solid #fed7aa",
+};
+const aiAdvisorGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+  gap: "18px",
+};
+
+const aiAdvisorCard = {
+  background: "linear-gradient(135deg,#FFFFFF,#EFF6FF)",
+  border: "1px solid #BFDBFE",
+  borderRadius: "24px",
+  padding: "22px",
+  boxShadow: "0 10px 30px rgba(30,58,138,0.08)",
+};
+
+const aiAdvisorTopRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "16px",
+};
+
+const aiAdvisorIcon = (index: number) => ({
+  width: "42px",
+  height: "42px",
+  borderRadius: "16px",
+  display: "grid",
+  placeItems: "center",
+  background:
+    index % 3 === 0 ? "#dcfce7" : index % 3 === 1 ? "#ffedd5" : "#dbeafe",
+  fontSize: "22px",
+});
+
+const aiAdvisorBadge = (index: number) => ({
+  padding: "8px 12px",
+  borderRadius: "999px",
+  fontSize: "11px",
+  fontWeight: 900,
+  color: index % 3 === 0 ? "#166534" : index % 3 === 1 ? "#9a3412" : "#1d4ed8",
+  background:
+    index % 3 === 0 ? "#dcfce7" : index % 3 === 1 ? "#ffedd5" : "#dbeafe",
+});
+
+const aiAdvisorTitle = {
+  fontSize: "20px",
+  margin: "0 0 10px 0",
+  letterSpacing: "-0.3px",
 };
 
 const authPage = {
